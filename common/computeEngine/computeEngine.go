@@ -13,21 +13,28 @@ type Instance struct {
 	Labels map[string]string
 }
 
-func GetInstances(project string, region string) []Instance {
-	ctx := context.Background()
+type VmInstances struct {
+	instanceName   map[string]*Instance
+	Ctx            context.Context
+	computeService *compute.Service
+}
 
-	c, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
+func (v *VmInstances) InitVMClient() error {
+	c, err := google.DefaultClient(v.Ctx, compute.CloudPlatformScope)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	computeService, err := compute.New(c)
+	v.computeService, err = compute.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
+}
+
+func (v *VmInstances) GetInstances(project string, region string) []Instance {
 	Instances := make([]Instance, 0)
-	req := computeService.Instances.List(project, region+"-b")
-	if err := req.Pages(ctx, func(page *compute.InstanceList) error {
+	req := v.computeService.Instances.List(project, region+"-b")
+	if err := req.Pages(v.Ctx, func(page *compute.InstanceList) error {
 		for _, instance := range page.Items {
 			// TODO: Change code below to process each `instance` resource:
 			Instances = append(Instances, Instance{Name: instance.Name,
@@ -41,3 +48,11 @@ func GetInstances(project string, region string) []Instance {
 	}
 	return Instances
 }
+
+// func stopVMInstances() {
+// 	resp, err := computeService.Instances.Stop(project, zone, instance).Context(ctx).Do()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// }

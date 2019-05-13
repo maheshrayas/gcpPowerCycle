@@ -1,16 +1,18 @@
 package functions
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/maheshrayas/powerCycle/common/computeEngine"
+
 	"gopkg.in/yaml.v2"
 )
 
-type Configs struct {
+type configs struct {
 	Defaults struct {
 		Region []string `yaml:"region"`
 	} `yaml:"defaults"`
@@ -25,7 +27,7 @@ type Instance struct {
 
 type Instances []Instance
 
-func (config *Configs) readConfig() {
+func (config *configs) readConfig() {
 	data, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatalln(err)
@@ -39,14 +41,19 @@ func (config *Configs) readConfig() {
 
 func PowerCycle(w http.ResponseWriter, r *http.Request) {
 	var projectId string
-	config := Configs{}
+	config := configs{}
 	config.readConfig()
 	if config.Projects != nil {
 		for _, project := range config.Projects {
 			projectId = project.ProjectID
 		}
 	}
-	Instances := computeEngine.GetInstances(projectId, "australia-southeast1")
+
+	a := &computeEngine.VmInstances{
+		Ctx: context.Background(),
+	}
+	a.InitVMClient()
+	Instances := a.GetInstances(projectId, "australia-southeast1")
 	json.NewEncoder(w).Encode(Instances)
 	// jw := writers.NewMessageWriter(Instances)
 	// jsonString, err := Instances.JSONString()
