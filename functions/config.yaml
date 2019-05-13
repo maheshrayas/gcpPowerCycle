@@ -1,0 +1,8 @@
+defaults:
+  region:
+    - australia-southeast1
+
+projects:
+  - project_id: "cloudbuild-238805"
+
+
