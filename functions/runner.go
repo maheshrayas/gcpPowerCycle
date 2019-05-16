@@ -21,12 +21,6 @@ type configs struct {
 	} `yaml:"projects"`
 }
 
-type Instance struct {
-	Name string `json:"Name"`
-}
-
-type Instances []Instance
-
 func (config *configs) readConfig() {
 	data, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
@@ -39,21 +33,22 @@ func (config *configs) readConfig() {
 	}
 }
 
+//PowerCycle Entry point for the cloud functions
 func PowerCycle(w http.ResponseWriter, r *http.Request) {
-	var projectId string
+	var projectID string
 	config := configs{}
 	config.readConfig()
 	if config.Projects != nil {
 		for _, project := range config.Projects {
-			projectId = project.ProjectID
+			projectID = project.ProjectID
 		}
 	}
 
-	a := &computeEngine.VmInstances{
+	a := &computeEngine.VMInstances{
 		Ctx: context.Background(),
 	}
 	a.InitVMClient()
-	Instances := a.GetInstances(projectId, "australia-southeast1")
+	Instances := a.GetInstances(projectID, "australia-southeast1")
 	json.NewEncoder(w).Encode(Instances)
 	// jw := writers.NewMessageWriter(Instances)
 	// jsonString, err := Instances.JSONString()
@@ -66,12 +61,3 @@ func PowerCycle(w http.ResponseWriter, r *http.Request) {
 	// w.WriteHeader(http.StatusOK)
 	// w.Write([]byte(jsonString))
 }
-
-// func handleRequests() {
-// 	http.HandleFunc("/", PowerUtility)
-// 	log.Fatal(http.ListenAndServe(":8081", nil))
-// }
-
-// func main() {
-// 	handleRequests()
-// }
