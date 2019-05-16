@@ -10,6 +10,7 @@ import (
 type CeInstances struct {
 	Name   string `json:"name"`
 	Labels map[string]string
+	Zone   string
 }
 
 //VMInstances  Intialize VM Instance struct
@@ -17,4 +18,9 @@ type VMInstances struct {
 	instanceDetails map[string]*CeInstances
 	Ctx             context.Context
 	computeService  *compute.Service
+}
+
+// Region  struct
+type Region struct {
+	Zones []string `json:"zones"`
 }
