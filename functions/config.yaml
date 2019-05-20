@@ -1,8 +1,13 @@
 defaults:
   region:
     - australia-southeast1
-
+  services:
+    - service: compute
+      active: true
+      tags:
+        - owner
+        - schedule
+        - project
+      action: tagging  #"tagging" : to set tags to the compute engine, "powercycle" to stop and start instnace based in schedule tags
 projects:
   - project_id: "cloudbuild-238805"
-
-

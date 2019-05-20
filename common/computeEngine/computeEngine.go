@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
+	"sync"
+
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
 )
@@ -36,7 +38,9 @@ func (v *VMInstances) getZones(project string, region string) []string {
 //GetInstances Lists all the running instances
 func (v *VMInstances) GetInstances(project string, region string) []CeInstances {
 	Instances := make([]CeInstances, 0)
+	var wg sync.WaitGroup
 	for _, zone := range v.getZones(project, region) {
+		wg.Add(1)
 		req := v.computeService.Instances.List(project, zone)
 		if err := req.Pages(v.Ctx, func(page *compute.InstanceList) error {
 			for _, instance := range page.Items {
@@ -45,25 +49,14 @@ func (v *VMInstances) GetInstances(project string, region string) []CeInstances 
 					Labels: instance.Labels, Zone: zone}
 				Instances = append(Instances, CeInstances{Name: instance.Name,
 					Labels: instance.Labels, Zone: zone})
-				log.Println("Printing the instance details : ", instance)
+				go v.valdiateTags(project, zone, instance.Name, &wg)
+				// log.Println("Printing the instance details : ", instance)
 			}
 			return nil
 		}); err != nil {
 			log.Fatal(err)
 		}
-		v.stopVMInstances(project, zone)
 	}
+	wg.Wait()
 	return Instances
-}
-
-func (v *VMInstances) stopVMInstances(project string, zone string) {
-	for name := range v.instanceDetails {
-		log.Println("stopping the instance  : \n", name)
-		go func(instanceName string) {
-			_, err := v.computeService.Instances.Stop(project, zone, instanceName).Context(v.Ctx).Do()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}(name)
-	}
 }

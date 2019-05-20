@@ -3,6 +3,7 @@ package computeEngine
 import (
 	"context"
 
+	"github.com/maheshrayas/powerCycle/common/configuration"
 	"google.golang.org/api/compute/v1"
 )
 
@@ -10,6 +11,7 @@ import (
 type CeInstances struct {
 	Name   string `json:"name"`
 	Labels map[string]string
+	State  string
 	Zone   string
 }
 
@@ -18,6 +20,7 @@ type VMInstances struct {
 	instanceDetails map[string]*CeInstances
 	Ctx             context.Context
 	computeService  *compute.Service
+	Config          *configuration.Configs
 }
 
 // Region  struct

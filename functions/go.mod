@@ -6,7 +6,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a // indirect
 	google.golang.org/api v0.4.0 // indirect
 
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
 
 replace github.com/maheshrayas/powerCycle/common => ../common
