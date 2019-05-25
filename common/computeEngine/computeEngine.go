@@ -40,17 +40,16 @@ func (v *VMInstances) GetInstances(project string, region string) []CeInstances 
 	Instances := make([]CeInstances, 0)
 	var wg sync.WaitGroup
 	for _, zone := range v.getZones(project, region) {
-		wg.Add(1)
 		req := v.computeService.Instances.List(project, zone)
 		if err := req.Pages(v.Ctx, func(page *compute.InstanceList) error {
 			for _, instance := range page.Items {
+				wg.Add(1)
 				// TODO: Change code below to process each `instance` resource:
 				v.instanceDetails[instance.Name] = &CeInstances{Name: instance.Name,
-					Labels: instance.Labels, Zone: zone}
+					Labels: instance.Labels, Zone: zone, State: instance.Status}
 				Instances = append(Instances, CeInstances{Name: instance.Name,
-					Labels: instance.Labels, Zone: zone})
+					Labels: instance.Labels, Zone: zone, State: instance.Status})
 				go v.valdiateTags(project, zone, instance.Name, &wg)
-				// log.Println("Printing the instance details : ", instance)
 			}
 			return nil
 		}); err != nil {

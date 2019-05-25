@@ -1,7 +1,6 @@
 package computeEngine
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -11,7 +10,6 @@ func parseRegion(zoneUrls *[]string) []string {
 	for _, zone := range *zoneUrls {
 		r := *regexp.MustCompile(`\/([^/?]*)$`)
 		res := r.FindAllStringSubmatch(zone, -1)
-		fmt.Println(strings.Split(res[0][0], `/`)[1])
 		zones = append(zones, strings.Split(res[0][0], `/`)[1])
 	}
 	return zones
