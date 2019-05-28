@@ -3,9 +3,9 @@ package computeEngine
 import (
 	"encoding/json"
 	"log"
-
+"fmt"
 	"sync"
-
+"time"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
 )
@@ -36,24 +36,26 @@ func (v *VMInstances) getZones(project string, region string) []string {
 }
 
 //GetInstances Lists all the running instances
-func (v *VMInstances) GetInstances(project string, region string) []CeInstances {
-	Instances := make([]CeInstances, 0)
+func (v *VMInstances) GetInstances(project string) []CeInstances {
+	fmt.Println(time.Now())
 	var wg sync.WaitGroup
-	for _, zone := range v.getZones(project, region) {
-		req := v.computeService.Instances.List(project, zone)
-		if err := req.Pages(v.Ctx, func(page *compute.InstanceList) error {
-			for _, instance := range page.Items {
-				wg.Add(1)
-				// TODO: Change code below to process each `instance` resource:
-				v.instanceDetails[instance.Name] = &CeInstances{Name: instance.Name,
-					Labels: instance.Labels, Zone: zone, State: instance.Status}
-				Instances = append(Instances, CeInstances{Name: instance.Name,
-					Labels: instance.Labels, Zone: zone, State: instance.Status})
-				go v.valdiateTags(project, zone, instance.Name, &wg)
+	Instances := make([]CeInstances, 0)
+	for _, region := range v.Config.Defaults.Regions{
+		fmt.Println("Checking for reqion",region)
+		for _, zone := range v.getZones(project, region) {
+			fmt.Println("Checking for zone",region)
+			req := v.computeService.Instances.List(project, zone)
+			if err := req.Pages(v.Ctx, func(page *compute.InstanceList) error {
+				for _, instance := range page.Items {
+					wg.Add(1)
+					v.instanceDetails[instance.Name] = &CeInstances{Name: instance.Name,
+						Labels: instance.Labels, Zone: zone, State: instance.Status}
+					go v.valdiateTags(project, zone, instance.Name, &wg)
+				}
+				return nil
+			}); err != nil {
+				log.Fatal(err)
 			}
-			return nil
-		}); err != nil {
-			log.Fatal(err)
 		}
 	}
 	wg.Wait()

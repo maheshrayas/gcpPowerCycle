@@ -9,7 +9,7 @@ import (
 
 type Configs struct {
 	Defaults struct {
-		Region   []string `yaml:"region"`
+		Regions  []string `yaml:"regions"`
 		Timezone string   `yaml:"timezone"`
 		Services []struct {
 			Service string   `yaml:"service"`

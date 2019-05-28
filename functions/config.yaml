@@ -1,13 +1,22 @@
 defaults:
-  region:
+  regions:
     - australia-southeast1
+  timezone: Australia/Sydney
   services:
     - service: compute
+      active: false
+      tags:
+        - owner
+        - schedule
+        - project
+      action: tagging
+    - service: gke
       active: true
       tags:
         - owner
         - schedule
         - project
-      action: tagging  #"tagging" : to set tags to the compute engine, "powercycle" to stop and start instnace based in schedule tags
+      action: tagging
+        #"tagging" : to set tags to the compute engine, "powercycle" to stop and start instnace based in schedule tags
 projects:
   - project_id: "cloudbuild-238805"
