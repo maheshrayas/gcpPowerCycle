@@ -12,6 +12,7 @@ const (
 	RE_SCHEDULE_DAYS = "([a-z]{3}-[a-z]{3})"
 )
 
+// make this as a const
 var shortDayNames = []string{
 	"mon",
 	"tue",
@@ -20,6 +21,18 @@ var shortDayNames = []string{
 	"fri",
 	"sat",
 	"sun",
+}
+
+type nano2 *time.Time
+
+var DaysMap = map[string]int{
+	"Monday":    0,
+	"Tuesday":   1,
+	"Wednesday": 2,
+	"Thursday":  3,
+	"Friday":    4,
+	"Saturday":  5,
+	"Sunday":    6,
 }
 
 type InstaceTimeDetails struct {
@@ -45,13 +58,16 @@ func (I *InstaceTimeDetails) Validate() bool {
 	response := fmt.Sprintf(RE_SCHEDULE_TIME, "start")
 	start := regular(label, response)
 	start = strings.Replace(start, "-", ":", 1)
+	fmt.Println(start)
 	response = fmt.Sprintf(RE_SCHEDULE_TIME, "stop")
 	stop := regular(label, response)
 	stop = strings.Replace(stop, "-", ":", 1)
+	fmt.Println(stop)
 	response = fmt.Sprintf(RE_SCHEDULE_DAYS)
+
 	week := regular(label, response)
 	var dayRanges = make([]int, 1)
-	dayRanges[0] = int(I.CurrentTime.Weekday())
+	dayRanges[0] = DaysMap[I.CurrentTime.Weekday().String()]
 	for _, day := range strings.Split(week, "-") {
 		if idx := getDayIndex(day); idx != 99 {
 			dayRanges = append(dayRanges, idx)
@@ -61,10 +77,12 @@ func (I *InstaceTimeDetails) Validate() bool {
 		fmt.Printf("Instance %s needs to be running between %s to %s\n", I.InstanceName, shortDayNames[dayRanges[1]], shortDayNames[dayRanges[2]])
 		return false
 	}
+
 	return I.isTimeInRange(start, stop)
 }
 
 func inBetween(i []int) bool {
+	fmt.Println(i)
 	if (i[0] >= i[1]) && (i[0] <= i[2]) {
 		return true
 	}

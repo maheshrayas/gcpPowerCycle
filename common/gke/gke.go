@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sync"
 	// "time"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
@@ -44,9 +43,8 @@ func (v *K8Clusters) getZones(project string, region string) []string {
 	return parseRegion(&regions.Zones)
 }
 
-//GetInstances Lists all the active cluster
 func (v *K8Clusters) GetClusters(project string) []string {
-	var wg sync.WaitGroup
+	// var wg sync.WaitGroup
 	for _, region := range v.Config.Defaults.Regions {
 		fmt.Println("Checking for region", region)
 		for _, zone := range v.getZones(project, region) {
@@ -56,18 +54,21 @@ func (v *K8Clusters) GetClusters(project string) []string {
 				log.Fatal("Bomb")
 			}
 			for _, cl := range clusters.Clusters {
-				wg.Add(1)
 				v.clusterInstances[cl.Name] = &IndividualCluster{
-					Name:             cl.Name,
-					ResourceLabels:   cl.ResourceLabels,
-					Status:           cl.Status,
-					NodePools:        cl.NodePools,
+					Name:           cl.Name,
+					ResourceLabels: cl.ResourceLabels,
+					Status:         cl.Status,
+					NodePools:      cl.NodePools,
+					ProjectId:      project,
+					Zone:           zone,
 				}
-				go v.valdiateTags(project, zone, cl.Name, &wg)
+				for _, nodePool := range cl.NodePools {
+					// wg.Add(1)
+					v.valdiateTags(nodePool, cl.Name)
+				}
 			}
 		}
 	}
-	fmt.Println(v.clusterInstances["standard-cluster-1"].Status)
-	wg.Wait()
+	// wg.Wait()
 	return []string{}
 }

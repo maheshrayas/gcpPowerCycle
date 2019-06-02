@@ -14,6 +14,8 @@ type IndividualCluster struct {
 	ResourceLabels   map[string]string `json:"resourceLabels"`
 	Status           string            `json:"status"`
 	NodePools        []*container.NodePool
+	ProjectId        string
+	Zone             string
 }
 
 //VMInstances  Intialize VM Instance struct
