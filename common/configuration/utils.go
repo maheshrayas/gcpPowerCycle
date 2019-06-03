@@ -1,11 +1,10 @@
-package computeEngine
+package configuration
 
 import (
 	"regexp"
 	"strings"
 )
-
-func parseRegion(zoneUrls *[]string) []string {
+func ParseRegion(zoneUrls *[]string) []string {
 	zones := make([]string, 0)
 	for _, zone := range *zoneUrls {
 		r := *regexp.MustCompile(`\/([^/?]*)$`)

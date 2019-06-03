@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
+	confg "github.com/maheshrayas/powerCycle/common/configuration"
 	// "time"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
@@ -40,35 +42,41 @@ func (v *K8Clusters) getZones(project string, region string) []string {
 	jsonRegions, _ := json.Marshal(resp)
 	var regions Region
 	json.Unmarshal(jsonRegions, &regions)
-	return parseRegion(&regions.Zones)
+	return confg.ParseRegion(&regions.Zones)
 }
 
-func (v *K8Clusters) GetClusters(project string) []string {
-	// var wg sync.WaitGroup
-	for _, region := range v.Config.Defaults.Regions {
+func (k8 *K8Clusters) GetClusters(project string) []string {
+	var wg sync.WaitGroup
+	for _, region := range k8.Config.Defaults.Regions {
 		fmt.Println("Checking for region", region)
-		for _, zone := range v.getZones(project, region) {
+		for _, zone := range k8.getZones(project, region) {
 			fmt.Println("Checking for zone", zone)
-			clusters, err := v.containerService.Projects.Zones.Clusters.List(project, zone).Context(v.Ctx).Do()
+			clusters, err := k8.containerService.Projects.Zones.Clusters.List(project, zone).Context(k8.Ctx).Do()
 			if err != nil {
 				log.Fatal("Bomb")
 			}
 			for _, cl := range clusters.Clusters {
-				v.clusterInstances[cl.Name] = &IndividualCluster{
-					Name:           cl.Name,
-					ResourceLabels: cl.ResourceLabels,
-					Status:         cl.Status,
-					NodePools:      cl.NodePools,
-					ProjectId:      project,
-					Zone:           zone,
-				}
-				for _, nodePool := range cl.NodePools {
-					// wg.Add(1)
-					v.valdiateTags(nodePool, cl.Name)
-				}
+				wg.Add(1)
+				go k8.powerCycleGKE(cl, project, &wg)
 			}
 		}
 	}
-	// wg.Wait()
+	wg.Wait()
 	return []string{}
 }
+
+func (k8 *K8Clusters) powerCycleGKE(cl *container.Cluster, project string, wg *sync.WaitGroup ){
+	k8.clusterInstances[cl.Name] = &IndividualCluster{
+		Name:           cl.Name,
+		ResourceLabels: cl.ResourceLabels,
+		Status:         cl.Status,
+		NodePools:      cl.NodePools,
+		ProjectId:      project,
+		Zone:           cl.Zone,
+	}
+	for _, nodePool := range cl.NodePools {
+		k8.valdiateTags(nodePool, cl.Name)
+	}
+	wg.Done()
+}
+

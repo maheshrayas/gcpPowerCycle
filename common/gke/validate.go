@@ -23,7 +23,7 @@ func (k8 *K8Clusters) valdiateTags(nodePool *container.NodePool, clustername str
 			fmt.Println(status)
 			if status == "stopped" && nodesShouldBeRunning {
 				nodeSize,_:=strconv.ParseInt(k8.clusterInstances[clustername].ResourceLabels["nodecount-"+nodePool.Name],10,64)
-				k8.StopWorkerNodes(clustername,nodePool.Name, nodeSize, "running", nodeSize)
+				k8.StopWorkerNodes(clustername,nodePool.Name, nodeSize, "running", k8.clusterInstances[clustername].ResourceLabels["nodecount-"+nodePool.Name])
 			}else if status == "running" && !nodesShouldBeRunning{
 				k8.StopWorkerNodes(clustername, nodePool.Name,0, "stopped", strconv.Itoa(currentNodeCount))
 			}
@@ -36,7 +36,7 @@ func (k8 *K8Clusters) valdiateTags(nodePool *container.NodePool, clustername str
 
 //Inorder to get the current number of nodes running in node pool, we need to invoke InstanceGroups.ListInstances
 // GKE API only provides the Initial node count which is configured at the beginnig of node pool creatig.
-func getCurrentNodeCount(k8 *K8Clusters, instanceGroupNameURL string, clustername string)(instanceCount int){
+func getCurrentNodeCount(k8 *K8Clusters, instanceGroupNameURL string,clustername string)(instanceCount int){
 	r := *regexp.MustCompile(`([^/?]*)$`)
 	instanceGroup := r.FindString(instanceGroupNameURL)
 	rb := &compute.InstanceGroupsListInstancesRequest{

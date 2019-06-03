@@ -8,6 +8,7 @@ import (
 "time"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
+	confg "github.com/maheshrayas/powerCycle/common/configuration"
 )
 
 //InitVMClient   Initialize
@@ -32,7 +33,7 @@ func (v *VMInstances) getZones(project string, region string) []string {
 	jsonRegions, _ := json.Marshal(resp)
 	var regions Region
 	json.Unmarshal(jsonRegions, &regions)
-	return parseRegion(&regions.Zones)
+	return confg.ParseRegion(&regions.Zones)
 }
 
 //GetInstances Lists all the running instances
