@@ -13,35 +13,38 @@ import (
 )
 
 //InitVMClient   Initialize
-func (v *K8Clusters) InitContainerClient() error {
-	v.clusterInstances = map[string]*IndividualCluster{}
-	c, err := google.DefaultClient(v.Ctx, container.CloudPlatformScope)
+func (k8 *K8Clusters) InitContainerClient() error {
+	k8.clusterInstances = map[string]*IndividualCluster{}
+	c, err := google.DefaultClient(k8.Ctx, container.CloudPlatformScope)
 	if err != nil {
 		log.Fatal(err)
 	}
-	v.containerService, err = container.New(c)
+	k8.containerService, err = container.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
-	comp, err := google.DefaultClient(v.Ctx, compute.CloudPlatformScope)
+	comp, err := google.DefaultClient(k8.Ctx, compute.CloudPlatformScope)
 	if err != nil {
 		log.Fatal(err)
 	}
-	v.computeService, err = compute.New(comp)
+	k8.computeService, err = compute.New(comp)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return nil
 }
 
-func (v *K8Clusters) getZones(project string, region string) []string {
-	resp, err := v.computeService.Regions.Get(project, region).Context(v.Ctx).Do()
+func (k8 *K8Clusters) getZones(project string, region string) []string {
+	resp, err := k8.computeService.Regions.Get(project, region).Context(k8.Ctx).Do()
 	if err != nil {
 		log.Fatal(err)
 	}
 	jsonRegions, _ := json.Marshal(resp)
 	var regions Region
-	json.Unmarshal(jsonRegions, &regions)
+	if unmarshallError:= json.Unmarshal(jsonRegions, &regions); unmarshallError!= nil{
+		log.Fatal(err)
+		return nil
+	}
 	return confg.ParseRegion(&regions.Zones)
 }
 

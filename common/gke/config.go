@@ -31,7 +31,3 @@ type K8Clusters struct {
 type Region struct {
 	Zones []string `json:"zones"`
 }
-
-type NodePool struct {
-	Name string
-}

@@ -16,7 +16,7 @@ func (v *VMInstances) valdiateTags(project string, region string, name string, w
 				// check if compute engine has the tags
 				if _, ok := v.instanceDetails[name].Labels[val]; !ok {
 					stop = true
-					fmt.Println("Instance %s doesn't have %s Label", v.instanceDetails[name], val)
+					fmt.Printf("Instance %s doesn't have %s Label", v.instanceDetails[name], val)
 				}
 			}
 		}
@@ -24,22 +24,22 @@ func (v *VMInstances) valdiateTags(project string, region string, name string, w
 	// stop the instance if the mandatory tags are not present
 	if stop == true && v.instanceDetails[name].State == "RUNNING" {
 		v.instanceDetails[name].State = "TERMINATED"
-		fmt.Println("Stopping instance: %s", v.instanceDetails[name])
+		fmt.Printf("Stopping instance: %s", v.instanceDetails[name])
 		v.stopVMInstances(project, region, name)
 	}
 	// now check for the scheduled up tim
 	if stop == false && v.instanceDetails[name].State == "RUNNING" {
 		scheduledLabels := &sch.InstaceTimeDetails{InsLabel: v.instanceDetails[name].Labels["schedule"],
-																							 	Localtimezone:v.Config.Defaults.Timezone,
-																							 	InstanceName : name,}
+			Localtimezone: v.Config.Defaults.Timezone,
+			InstanceName:  name}
 		if !scheduledLabels.Validate() {
 			v.stopVMInstances(project, region, name)
 		}
 	}
 	if stop == false && v.instanceDetails[name].State == "TERMINATED" {
 		scheduledLabels := &sch.InstaceTimeDetails{InsLabel: v.instanceDetails[name].Labels["schedule"],
-																								Localtimezone:v.Config.Defaults.Timezone,
-																							  InstanceName : name, }
+			Localtimezone: v.Config.Defaults.Timezone,
+			InstanceName:  name}
 		if scheduledLabels.Validate() {
 			v.StartVMInstances(project, region, name)
 		}
