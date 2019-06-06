@@ -34,3 +34,7 @@ func (config *Configs) ReadConfig() {
 		log.Fatalf("error: %v", err)
 	}
 }
+
+type Region struct {
+	Zones []string `json:"zones"`
+}

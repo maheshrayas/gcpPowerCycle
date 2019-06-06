@@ -1,14 +1,12 @@
 package computeEngine
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
-"fmt"
 	"sync"
-"time"
+	confg "github.com/maheshrayas/powerCycle/common/configuration"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
-	confg "github.com/maheshrayas/powerCycle/common/configuration"
 )
 
 //InitVMClient   Initialize
@@ -25,26 +23,13 @@ func (v *VMInstances) InitVMClient() error {
 	return nil
 }
 
-func (v *VMInstances) getZones(project string, region string) []string {
-	resp, err := v.computeService.Regions.Get(project, region).Context(v.Ctx).Do()
-	if err != nil {
-		log.Fatal(err)
-	}
-	jsonRegions, _ := json.Marshal(resp)
-	var regions Region
-	json.Unmarshal(jsonRegions, &regions)
-	return confg.ParseRegion(&regions.Zones)
-}
-
 //GetInstances Lists all the running instances
-func (v *VMInstances) GetInstances(project string) []CeInstances {
-	fmt.Println(time.Now())
+func (v *VMInstances) GetInstances(project string)  {
 	var wg sync.WaitGroup
-	Instances := make([]CeInstances, 0)
-	for _, region := range v.Config.Defaults.Regions{
-		fmt.Println("Checking for reqion",region)
-		for _, zone := range v.getZones(project, region) {
-			fmt.Println("Checking for zone",region)
+	for _, region := range v.Config.Defaults.Regions {
+		fmt.Println("Checking for reqion", region)
+		for _, zone := range confg.GetZones(v.Ctx, v.computeService, project, region) {
+			fmt.Println("Checking for zone", zone)
 			req := v.computeService.Instances.List(project, zone)
 			if err := req.Pages(v.Ctx, func(page *compute.InstanceList) error {
 				for _, instance := range page.Items {
@@ -60,5 +45,4 @@ func (v *VMInstances) GetInstances(project string) []CeInstances {
 		}
 	}
 	wg.Wait()
-	return Instances
 }

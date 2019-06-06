@@ -24,3 +24,12 @@ Update go.mod file in function folder
 * Create a disk using the snapshot
 * Edit the instance and attach this disk
 * start the instance
+
+* Issue with go mod vendor
+go mod vendor
+go: modules disabled inside GOPATH/src by GO111MODULE=auto; see 'go help modules'
+export GO111MODULE=on and then run
+go mod vendor
+
+
+

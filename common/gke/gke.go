@@ -1,7 +1,7 @@
 package gke
 
 import (
-	"encoding/json"
+
 	"fmt"
 	"log"
 	"sync"
@@ -34,25 +34,11 @@ func (k8 *K8Clusters) InitContainerClient() error {
 	return nil
 }
 
-func (k8 *K8Clusters) getZones(project string, region string) []string {
-	resp, err := k8.computeService.Regions.Get(project, region).Context(k8.Ctx).Do()
-	if err != nil {
-		log.Fatal(err)
-	}
-	jsonRegions, _ := json.Marshal(resp)
-	var regions Region
-	if unmarshallError:= json.Unmarshal(jsonRegions, &regions); unmarshallError!= nil{
-		log.Fatal(err)
-		return nil
-	}
-	return confg.ParseRegion(&regions.Zones)
-}
-
 func (k8 *K8Clusters) GetClusters(project string) []string {
 	var wg sync.WaitGroup
 	for _, region := range k8.Config.Defaults.Regions {
 		fmt.Println("Checking for region", region)
-		for _, zone := range k8.getZones(project, region) {
+		for _, zone := range confg.GetZones(k8.Ctx, k8.computeService, project, region) {
 			fmt.Println("Checking for zone", zone)
 			clusters, err := k8.containerService.Projects.Zones.Clusters.List(project, zone).Context(k8.Ctx).Do()
 			if err != nil {
