@@ -24,7 +24,7 @@ func (v *VMInstances) InitVMClient() error {
 }
 
 //GetInstances Lists all the running instances
-func (v *VMInstances) GetInstances(project string)  {
+func (v *VMInstances) GetInstances(project string) string {
 	var wg sync.WaitGroup
 	for _, region := range v.Config.Defaults.Regions {
 		fmt.Println("Checking for reqion", region)
@@ -45,4 +45,5 @@ func (v *VMInstances) GetInstances(project string)  {
 		}
 	}
 	wg.Wait()
+	return "done"
 }

@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-
-"fmt"
+// "time"
+	"fmt"
 
 	"github.com/maheshrayas/powerCycle/common/computeEngine"
 	"github.com/maheshrayas/powerCycle/common/configuration"
+	"github.com/maheshrayas/powerCycle/common/gke"
 )
 
 //PowerCycle Entry point for the cloud functions
@@ -24,8 +25,27 @@ func main() {
 		Config: config,
 	}
 	a.InitVMClient()
-	Instances := a.GetInstances(projectID, "australia-southeast1")
-	fmt.Println(Instances)
+	b := &gke.K8Clusters{
+		Ctx: context.Background(),
+		Config: config,
+	}
+	b.InitContainerClient()
+	computeEngChan := make(chan struct{})
+	gkeChan := make(chan struct{})
+	go func() {
+		Instances := a.GetInstances(projectID)
+		fmt.Println(Instances)
+		close(computeEngChan)
+	}()
+	go func() {
+		Nodes := b.GetClusters(projectID)
+		fmt.Println(Nodes)
+		close(gkeChan)
+	}()
+	<-computeEngChan
+	<-gkeChan
+
+
 	// json.NewEncoder(w).Encode(Instances)
 
 	// jw := writers.NewMessageWriter(Instances)
