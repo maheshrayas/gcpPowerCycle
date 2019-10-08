@@ -1,4 +1,5 @@
 # Cost saving utiltiy for google compute engine and google kubernetes engine (stateless containers)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 # Initialize common
 ``` go mod init github.com/maheshrayas/powerCycle/common ```
