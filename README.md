@@ -30,6 +30,6 @@ export GO111MODULE=on and then run
 go mod vendor
 
 ## TODO:
-1. Run the cloudfunctions at the timely interval (every 30 mins)
+1. Run the cloudfunctions at the timely interval (every 30 mins) using Google cloud scheduler
 2. Documentation
 3. Unit test
