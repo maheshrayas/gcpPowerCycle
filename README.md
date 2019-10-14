@@ -15,6 +15,7 @@ Update go.mod file in function folder
 
 ## Deploy in cloud functions
 ``` cd functions ```
+
  ``` gcloud functions deploy PowerCycle --runtime go111 --trigger-http ```
 
 
